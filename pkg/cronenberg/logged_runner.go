@@ -2,7 +2,9 @@ package cronenberg
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -16,8 +18,37 @@ var NewLoggedRunner = func(context string, logger Logger) *LoggedRunner {
 	return &LoggedRunner{context: context, logger: logger}
 }
 
-func (runner *LoggedRunner) Execute(command string) ([]byte, error) {
+func (runner *LoggedRunner) incomingVars() map[string]string {
+	env := make(map[string]string, 0)
+
+	for _, line := range os.Environ() {
+		parts := strings.SplitN(line, "=", 2)
+		env[parts[0]] = parts[1]
+	}
+
+	return env
+}
+
+func (runner *LoggedRunner) resolveVars(vars map[string]string) []string {
+	env := runner.incomingVars()
+
+	for key, value := range vars {
+		env[key] = value
+	}
+
+	resolved := make([]string, 0)
+
+	for key, value := range env {
+		resolved = append(resolved, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	return resolved
+}
+
+func (runner *LoggedRunner) Execute(command string, vars map[string]string) ([]byte, error) {
 	cmd := exec.Command("bash", "-c", command)
+
+	cmd.Env = runner.resolveVars(vars)
 
 	output := make([]byte, 0)
 	buf := bytes.NewBuffer(output)

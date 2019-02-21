@@ -22,6 +22,10 @@ func (runner *Runner) Spec() string {
 	return "0 " + runner.job.When
 }
 
+func (runner *Runner) Env() map[string]string {
+	return runner.job.Env
+}
+
 func (runner *Runner) Run() {
 	// skip the run if the job is specified as locking and already running
 	if runner.locked() {
@@ -32,7 +36,7 @@ func (runner *Runner) Run() {
 		executor := cronenberg.NewLoggedRunner(runner.job.Name, runner.logger)
 
 		runner.lock()
-		executor.Execute(runner.job.Command)
+		executor.Execute(runner.job.Command, runner.job.Env)
 		runner.unlock()
 
 		runner.logger.Info(runner.job.Name, "Finished")

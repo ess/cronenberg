@@ -1,11 +1,12 @@
 package cronenberg
 
 type Job struct {
-	Name        string `yaml:"name"`
-	Description string `yaml:"description,omitempty"`
-	Command     string `yaml:"command"`
-	When        string `yaml:"when"`
-	Lock        bool   `yaml:"lock,omitempty"`
+	Name        string            `yaml:"name"`
+	Description string            `yaml:"description,omitempty"`
+	Command     string            `yaml:"command"`
+	When        string            `yaml:"when"`
+	Lock        bool              `yaml:"lock,omitempty"`
+	Env         map[string]string `yaml:"env,omitempty"`
 }
 
 type JobService interface {
@@ -16,6 +17,7 @@ type Runner interface {
 	Run()
 	Spec() string
 	Name() string
+	Env() map[string]string
 }
 
 type Cron interface {
