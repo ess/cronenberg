@@ -2,6 +2,7 @@ package mock
 
 import (
 	"fmt"
+	"time"
 )
 
 type Logger struct {
@@ -18,4 +19,8 @@ func (l *Logger) Info(context string, message string) {
 
 func (l *Logger) Error(context string, message string) {
 	l.Lines = append(l.Lines, fmt.Sprintf("ERR %s %s", context, message))
+}
+
+func (l *Logger) Wait() {
+	time.Sleep(100 * time.Millisecond)
 }
