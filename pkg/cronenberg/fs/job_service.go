@@ -3,7 +3,7 @@ package fs
 import (
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/ess/cronenberg"
+	"github.com/ess/cronenberg/pkg/cronenberg"
 )
 
 type JobService struct {

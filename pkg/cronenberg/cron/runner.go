@@ -1,7 +1,7 @@
 package cron
 
 import (
-	"github.com/ess/cronenberg"
+	"github.com/ess/cronenberg/pkg/cronenberg"
 )
 
 func NewRunner(job *cronenberg.Job, logger cronenberg.Logger) cronenberg.Runner {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/ess/cronenberg"
+	"github.com/ess/cronenberg/pkg/cronenberg"
 )
 
 type Logger struct {
