@@ -2,6 +2,7 @@ package cron
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/ess/cronenberg/mock"
@@ -135,5 +136,40 @@ func TestRunner_Run(t *testing.T) {
 				t.Errorf("Expected blah to be logged")
 			}
 		})
+	})
+
+	t.Run("with incoming env vars", func(t *testing.T) {
+		flibberty := "gibbets"
+		os.Setenv("flibberty", flibberty)
+		command := "echo $flibberty"
+		job := &cronenberg.Job{
+			When:    when,
+			Command: command,
+			Name:    name,
+		}
+
+		t.Run("it passes the incoming env vars to the command's shell", func(t *testing.T) {
+			log := mock.NewLogger()
+			runner := NewRunner(job, log)
+
+			runner.Run()
+
+			log.Wait()
+
+			found := false
+			expected := fmt.Sprintf("INFO %s %s", name, flibberty)
+			for _, line := range log.Lines {
+				if line == expected {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				t.Errorf("Expected flibberty to be logged")
+			}
+
+		})
+
 	})
 }
