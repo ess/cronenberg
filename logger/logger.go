@@ -1,16 +1,18 @@
-package cronenberg
+package logger
 
 import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/ess/cronenberg"
 )
 
 type Logger struct {
 	log *logrus.Logger
 }
 
-func NewLogger() *Logger {
+func New() cronenberg.Logger {
 	log := logrus.New()
 	log.Formatter = &Formatter{}
 

@@ -9,10 +9,10 @@ import (
 
 type LoggedRunner struct {
 	context string
-	logger  *Logger
+	logger  Logger
 }
 
-var NewLoggedRunner = func(context string, logger *Logger) *LoggedRunner {
+var NewLoggedRunner = func(context string, logger Logger) *LoggedRunner {
 	return &LoggedRunner{context: context, logger: logger}
 }
 
@@ -46,13 +46,13 @@ func (runner *LoggedRunner) Execute(command string) ([]byte, error) {
 }
 
 type passThrough struct {
-	log     *Logger
+	log     Logger
 	context string
 	level   string
 	output  *bytes.Buffer
 }
 
-func newPassThrough(log *Logger, context string, level string, output *bytes.Buffer) *passThrough {
+func newPassThrough(log Logger, context string, level string, output *bytes.Buffer) *passThrough {
 	return &passThrough{
 		log:     log,
 		context: context,

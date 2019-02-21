@@ -6,10 +6,9 @@ import (
 	"os/signal"
 	//"time"
 
-	//"github.com/robfig/cron"
-	cron "gopkg.in/robfig/cron.v2"
-
-	"github.com/ess/cronenberg"
+	"github.com/ess/cronenberg/cron"
+	"github.com/ess/cronenberg/fs"
+	"github.com/ess/cronenberg/logger"
 )
 
 func main() {
@@ -18,28 +17,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger := cronenberg.NewLogger()
-	jobs := cronenberg.LoadJobs(os.Args[1], logger)
-	logger.Info("cronenberg", "Initializing")
+	log := logger.New()
+	jobs := fs.NewJobService(os.Args[1], log)
+	log.Info("cronenberg", "Initializing")
 
 	errs := make([]error, 0)
 	c := cron.New()
 
-	for _, j := range jobs {
-		logger.Info("cronenberg", "Scheduling job "+j.Name)
-		if _, err := c.AddJob("0 "+j.When, j); err != nil {
+	for _, j := range jobs.All() {
+		log.Info("cronenberg", "Scheduling job "+j.Name)
+		if err := c.Manage(cron.NewRunner(j, log)); err != nil {
 			errs = append(errs, err)
 		}
 	}
 
 	if len(errs) > 0 {
 		err := fmt.Sprintf("Could not schedule some jobs, aborting: %s", errs)
-		logger.Error("cronenberg", err)
+		log.Error("cronenberg", err)
 		os.Exit(1)
 	}
 
-	if len(c.Entries()) == 0 {
-		logger.Error("cronenberg", "No jobs were loaded, aborting")
+	if c.Count() == 0 {
+		log.Error("cronenberg", "No jobs were loaded, aborting")
 		os.Exit(1)
 	}
 
@@ -50,5 +49,5 @@ func main() {
 
 	<-sigs
 	c.Stop()
-	logger.Info("cronenberg", "Terminating")
+	log.Info("cronenberg", "Terminating")
 }

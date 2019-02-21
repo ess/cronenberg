@@ -1,4 +1,4 @@
-package cronenberg
+package logger
 
 import (
 	"bytes"
