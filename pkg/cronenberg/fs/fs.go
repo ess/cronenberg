@@ -1,17 +1,20 @@
+// Package fs provides functions for working with the file system as well as
+// services that specifically deal with the file system.
 package fs
 
 import (
-	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/afero"
 )
 
+// Root is an Afero Filesystem object used as a proxy to the real file system.
 var Root = afero.NewOsFs()
 
+// CreateDir takes a path and a file mode, and it creates the path on Root with
+// the given file mode. If there are any issues, an error is returned.
+// Otherwise, nil is returned.
 var CreateDir = func(path string, mode os.FileMode) error {
 	if !FileExists(path) {
 		err := Root.MkdirAll(path, mode)
@@ -23,6 +26,8 @@ var CreateDir = func(path string, mode os.FileMode) error {
 	return nil
 }
 
+// FileExists takes a file path and returns a bool. If the file exists on Root,
+// the result is true. Otherwise, it is false.
 var FileExists = func(path string) bool {
 	_, err := Root.Stat(path)
 
@@ -33,6 +38,8 @@ var FileExists = func(path string) bool {
 	return true
 }
 
+// DirectoryExists takes a directory path and returns a bool. If the directory
+// exists on Root, the result is true. Otherwise, it is false.
 var DirectoryExists = func(path string) bool {
 	if !FileExists(path) {
 		return false
@@ -45,6 +52,8 @@ var DirectoryExists = func(path string) bool {
 	return true
 }
 
+// IsDir takes a path and returns a bool. If the path is a directory, the result
+// is true. Otherwise, it is false.
 var IsDir = func(path string) bool {
 	info, err := Root.Stat(path)
 	if err != nil {
@@ -54,78 +63,26 @@ var IsDir = func(path string) bool {
 	return info.IsDir()
 }
 
-func Walk(path string, walkFunc filepath.WalkFunc) error {
-	return afero.Walk(Root, path, walkFunc)
-}
-
-func Copy(path string, targetPath string, mode os.FileMode) error {
-	infile, err := Root.Open(path)
-	if err != nil {
-		return err
-	}
-	defer infile.Close()
-
-	if FileExists(targetPath) {
-		rmerr := Root.Remove(targetPath)
-		if rmerr != nil {
-			return rmerr
-		}
-	}
-
-	outfile, err := Root.Create(targetPath)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		cerr := outfile.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-
-	_, err = io.Copy(outfile, infile)
-	if err != nil {
-		return err
-	}
-
-	err = outfile.Sync()
-	return err
-}
-
-func DirCopy(source string, target string) error {
-	if !FileExists(source) {
-		return fmt.Errorf("%s does not exist", source)
-	}
-
-	walkFunc := func(path string, info os.FileInfo, err error) error {
-		targetPath := target + strings.TrimPrefix(path, source)
-
-		if info.IsDir() {
-			return CreateDir(targetPath, info.Mode())
-		} else {
-			return Copy(path, targetPath, info.Mode())
-		}
-	}
-
-	return Walk(source, walkFunc)
-}
-
-func ReadDir(path string) ([]os.FileInfo, error) {
-	return afero.ReadDir(Root, path)
-}
-
+// ReadFile takes a file path, reads that file, and returns a byte array of the
+// file's contents and an error. If there are issues, the error is non-nil.
+// Otherwise, the error is nil.
 func ReadFile(path string) ([]byte, error) {
 	return afero.ReadFile(Root, path)
 }
 
+// Basename takes a file path and returns the actual filename.
 func Basename(path string) string {
 	return filepath.Base(path)
 }
 
+// Stat takes a path and returns both a file info object and an error. If there
+// are issues along the way, the error is non-nil. Otherwise, the error is nil.
 func Stat(path string) (os.FileInfo, error) {
 	return Root.Stat(path)
 }
 
+// Executable takes a file path and returns a bool. If the file's permissions
+// have the executable bit enabled, the result is true. Otherwise, it is false.
 func Executable(path string) bool {
 	info, _ := Stat(path)
 

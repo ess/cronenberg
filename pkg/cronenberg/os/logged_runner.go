@@ -1,4 +1,4 @@
-package cronenberg
+package os
 
 import (
 	"bytes"
@@ -7,14 +7,20 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/ess/cronenberg/pkg/cronenberg"
 )
 
+// LoggedRunner is an object that knows how to run an external process and
+// stream both its standard output and standard error to a Logger.
 type LoggedRunner struct {
 	context string
-	logger  Logger
+	logger  cronenberg.Logger
 }
 
-var NewLoggedRunner = func(context string, logger Logger) *LoggedRunner {
+// NewLoggedRunner takes a context and a Logger, using them to configure the
+// returned LoggedRunner.
+var NewLoggedRunner = func(context string, logger cronenberg.Logger) *LoggedRunner {
 	return &LoggedRunner{context: context, logger: logger}
 }
 
@@ -45,6 +51,10 @@ func (runner *LoggedRunner) resolveVars(vars map[string]string) []string {
 	return resolved
 }
 
+// Execute takes a command string and an environment variable map, executes the
+// command with the env vars applied, and returns a byte array of output as well
+// as an error. If the command returns cleanly, the error is nil. Otherwise, the
+// error is non-nil.
 func (runner *LoggedRunner) Execute(command string, vars map[string]string) ([]byte, error) {
 	cmd := exec.Command("bash", "-c", command)
 
@@ -77,13 +87,13 @@ func (runner *LoggedRunner) Execute(command string, vars map[string]string) ([]b
 }
 
 type passThrough struct {
-	log     Logger
+	log     cronenberg.Logger
 	context string
 	level   string
 	output  *bytes.Buffer
 }
 
-func newPassThrough(log Logger, context string, level string, output *bytes.Buffer) *passThrough {
+func newPassThrough(log cronenberg.Logger, context string, level string, output *bytes.Buffer) *passThrough {
 	return &passThrough{
 		log:     log,
 		context: context,
