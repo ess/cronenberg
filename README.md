@@ -63,3 +63,7 @@ This is just a YAML file containing an array of Job objects. Here's an example j
   env:
     flibberty: gibbets
 ```
+
+## History ##
+
+* v1.0.0 - Initial Release
